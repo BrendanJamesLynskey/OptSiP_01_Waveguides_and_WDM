@@ -1,0 +1,1425 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Silicon Photonics Fundamentals 01 — Waveguides, Couplers and WDM</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@400;500;600;700&family=Instrument+Sans:ital,wght@0,400;0,500;0,600;0,700;1,400;1,700&family=Geist+Mono:ital,wght@0,400;0,500;0,600;0,700;1,400;1,700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-primary: #1c1815;
+            --bg-card: #231e1a;
+            --bg-code: #2b2520;
+            --text-primary: #efe8dc;
+            --text-secondary: #a2978b;
+            --accent: #aabd59;
+            --accent-dim: #aabd5944;
+            --accent-glow: #aabd5933;
+            --border: #3a322b;
+            --font-display: 'Bricolage Grotesque', sans-serif;
+            --font-mono: 'Geist Mono', 'Geist Mono', monospace;
+            --font-body: 'Instrument Sans', sans-serif;
+            --max-width: 900px;
+        }
+
+        *, *::before, *::after {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            font-family: var(--font-body);
+            font-size: 17px;
+            line-height: 1.7;
+            overflow-x: hidden;
+        }
+
+        /* ── Header ── */
+        .hero {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 2rem 1.5rem;
+            text-align: center;
+            position: relative;
+        }
+
+        .hero::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 600px;
+            height: 600px;
+            background: radial-gradient(circle, var(--accent-glow) 0%, transparent 70%);
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .hero > * {
+            position: relative;
+            z-index: 1;
+        }
+
+        .series-label {
+            font-family: var(--font-mono);
+            font-size: 0.85rem;
+            color: var(--accent);
+            letter-spacing: 0.15em;
+            text-transform: uppercase;
+            margin-bottom: 1rem;
+        }
+
+        .hero h1 {
+            font-family: var(--font-display);
+            font-size: clamp(2rem, 5vw, 3.2rem);
+            font-weight: 700;
+            color: var(--text-primary);
+            line-height: 1.2;
+            margin-bottom: 1rem;
+        }
+
+        .hero h1 .accent {
+            color: var(--accent);
+        }
+
+        .hero .subtitle {
+            font-size: 1.1rem;
+            color: var(--text-secondary);
+            max-width: 600px;
+            margin-bottom: 2rem;
+        }
+
+        /* ── Tag Pills ── */
+        .tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            justify-content: center;
+            margin-bottom: 2.5rem;
+        }
+
+        .tag {
+            font-family: var(--font-mono);
+            font-size: 0.75rem;
+            padding: 0.25rem 0.75rem;
+            border-radius: 999px;
+            border: 1px solid var(--accent);
+            color: var(--accent);
+            background: var(--accent-dim);
+            white-space: nowrap;
+        }
+
+        /* ── Pipeline Flow Bar ── */
+        .pipeline {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            justify-content: center;
+            gap: 0.25rem;
+            margin-bottom: 1rem;
+            max-width: var(--max-width);
+        }
+
+        .pipeline-step {
+            font-family: var(--font-mono);
+            font-size: 0.7rem;
+            padding: 0.3rem 0.7rem;
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 4px;
+            color: var(--text-secondary);
+            white-space: nowrap;
+        }
+
+        .pipeline-arrow {
+            color: var(--accent);
+            font-size: 0.9rem;
+            font-weight: 700;
+        }
+
+        /* ── Slides ── */
+        .slide {
+            min-height: 100vh;
+            max-width: var(--max-width);
+            margin: 0 auto;
+            padding: 4rem 1.5rem;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .slide-number {
+            font-family: var(--font-display);
+            font-size: 5rem;
+            font-weight: 700;
+            color: var(--accent-dim);
+            position: absolute;
+            top: 2rem;
+            right: 1.5rem;
+            line-height: 1;
+            user-select: none;
+        }
+
+        .slide h2 {
+            font-family: var(--font-display);
+            font-size: 1.9rem;
+            font-weight: 700;
+            color: var(--accent);
+            margin-bottom: 1.5rem;
+            line-height: 1.25;
+        }
+
+        .slide h3 {
+            font-family: var(--font-display);
+            font-size: 1.3rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-top: 1.5rem;
+            margin-bottom: 0.75rem;
+        }
+
+        .slide p {
+            margin-bottom: 1rem;
+            color: var(--text-secondary);
+        }
+
+        .slide p strong {
+            color: var(--text-primary);
+        }
+
+        .slide ul, .slide ol {
+            margin-bottom: 1rem;
+            padding-left: 1.5rem;
+            color: var(--text-secondary);
+        }
+
+        .slide li {
+            margin-bottom: 0.4rem;
+        }
+
+        .slide li strong {
+            color: var(--text-primary);
+        }
+
+        /* ── Code Blocks ── */
+        .code-block {
+            background: var(--bg-code);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            margin: 1.25rem 0;
+            overflow: hidden;
+        }
+
+        .code-header {
+            font-family: var(--font-mono);
+            font-size: 0.75rem;
+            color: var(--accent);
+            background: rgba(170,189,89,0.08);
+            padding: 0.4rem 1rem;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .code-block pre {
+            margin: 0;
+            padding: 1rem;
+            overflow-x: auto;
+        }
+
+        .code-block code {
+            font-family: var(--font-mono);
+            font-size: 0.85rem;
+            line-height: 1.6;
+            color: #dad1c5;
+        }
+
+        /* Syntax highlighting (manual) */
+        .kw { color: #de805a; }
+        .fn { color: #d7bbdf; }
+        .str { color: #bcdbd4; }
+        .cm { color: #a2978b; font-style: italic; }
+        .num { color: #97cdc6; }
+        .type { color: #e3b174; }
+        .dir { color: #de805a; }
+        .mac { color: #e3b174; }
+
+        /* ── Tables ── */
+        .table-wrap {
+            overflow-x: auto;
+            margin: 1.25rem 0;
+            border-radius: 8px;
+            border: 1px solid var(--border);
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.9rem;
+        }
+
+        th {
+            background: var(--bg-code);
+            color: var(--accent);
+            font-weight: 600;
+            text-align: left;
+            padding: 0.75rem 1rem;
+            border-bottom: 1px solid var(--border);
+            font-family: var(--font-display);
+            white-space: nowrap;
+        }
+
+        td {
+            padding: 0.6rem 1rem;
+            border-bottom: 1px solid var(--border);
+            color: var(--text-secondary);
+        }
+
+        tr:last-child td {
+            border-bottom: none;
+        }
+
+        tr:nth-child(even) td {
+            background: rgba(35,30,26,0.5);
+        }
+
+        /* ── Diagrams ── */
+        .diagram-flow {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            margin: 1.5rem 0;
+            padding: 1.5rem;
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+        }
+
+        .diagram-box {
+            font-family: var(--font-mono);
+            font-size: 0.85rem;
+            padding: 0.5rem 1rem;
+            background: var(--bg-code);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            color: var(--text-primary);
+            text-align: center;
+            white-space: nowrap;
+        }
+
+        .diagram-box.accent {
+            border-color: var(--accent);
+            color: var(--accent);
+            background: rgba(170,189,89,0.08);
+        }
+
+        .diagram-box.dim {
+            color: var(--text-secondary);
+            border-color: var(--border);
+        }
+
+        .diagram-arrow {
+            color: var(--accent);
+            font-size: 1.3rem;
+            font-weight: 700;
+        }
+
+        /* Vertical flow diagrams */
+        .diagram-vertical {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0.3rem;
+            margin: 1.5rem 0;
+            padding: 1.5rem;
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+        }
+
+        .diagram-vertical .diagram-arrow {
+            font-size: 1.1rem;
+        }
+
+        /* Nested hierarchy diagram */
+        .hierarchy {
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+            margin: 1.5rem 0;
+            padding: 1.5rem;
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+        }
+
+        .hierarchy-level {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .hierarchy-label {
+            font-family: var(--font-mono);
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+            min-width: 80px;
+            text-align: right;
+        }
+
+        .hierarchy-items {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.35rem;
+        }
+
+        .hierarchy-item {
+            font-family: var(--font-mono);
+            font-size: 0.75rem;
+            padding: 0.3rem 0.6rem;
+            border-radius: 4px;
+            background: var(--bg-code);
+            border: 1px solid var(--border);
+            color: var(--text-secondary);
+        }
+
+        .hierarchy-item.accent {
+            border-color: var(--accent);
+            color: var(--accent);
+            background: rgba(170,189,89,0.08);
+        }
+
+        /* Grid diagram */
+        .diagram-grid {
+            display: grid;
+            gap: 0.75rem;
+            margin: 1.5rem 0;
+            padding: 1.5rem;
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+        }
+
+        .diagram-grid.cols-2 {
+            grid-template-columns: 1fr 1fr;
+        }
+
+        .diagram-grid.cols-3 {
+            grid-template-columns: 1fr 1fr 1fr;
+        }
+
+        .diagram-panel {
+            padding: 1rem;
+            background: var(--bg-code);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+        }
+
+        .diagram-panel.accent-border {
+            border-left: 3px solid var(--accent);
+        }
+
+        .diagram-panel h4 {
+            font-family: var(--font-display);
+            font-size: 1rem;
+            color: var(--accent);
+            margin-bottom: 0.5rem;
+        }
+
+        .diagram-panel p, .diagram-panel ul {
+            font-size: 0.85rem;
+        }
+
+        /* ── Callout Boxes ── */
+        .callout {
+            background: var(--bg-card);
+            border-left: 3px solid var(--accent);
+            border-radius: 0 8px 8px 0;
+            padding: 1rem 1.25rem;
+            margin: 1.25rem 0;
+        }
+
+        .callout p {
+            margin-bottom: 0;
+        }
+
+        .callout .callout-label {
+            font-family: var(--font-mono);
+            font-size: 0.75rem;
+            color: var(--accent);
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            margin-bottom: 0.3rem;
+        }
+
+        /* ── Tier Visual ── */
+        .tier-visual {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+            margin: 1.5rem 0;
+            padding: 1.5rem;
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+        }
+
+        .tier-bar {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .tier-label {
+            font-family: var(--font-mono);
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+            min-width: 90px;
+            text-align: right;
+        }
+
+        .tier-fill {
+            height: 32px;
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            padding: 0 0.75rem;
+            font-family: var(--font-mono);
+            font-size: 0.7rem;
+            white-space: nowrap;
+            transition: width 0.6s ease;
+        }
+
+        .tier-cost {
+            font-family: var(--font-mono);
+            font-size: 0.7rem;
+            color: var(--text-secondary);
+            min-width: 70px;
+        }
+
+        /* ── Contents list ── */
+        .contents-list {
+            list-style: none;
+            padding-left: 0;
+            counter-reset: contents;
+        }
+
+        .contents-list li {
+            counter-increment: contents;
+            padding: 0.6rem 0;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .contents-list li:last-child {
+            border-bottom: none;
+        }
+
+        .contents-list li::before {
+            content: counter(contents, decimal-leading-zero);
+            font-family: var(--font-mono);
+            font-size: 0.85rem;
+            color: var(--accent);
+            min-width: 2rem;
+        }
+
+        .contents-list a {
+            color: var(--text-primary);
+            text-decoration: none;
+            transition: color 0.2s;
+        }
+
+        .contents-list a:hover {
+            color: var(--accent);
+        }
+
+        /* ── Footer ── */
+        .footer {
+            text-align: center;
+            padding: 3rem 1.5rem;
+            color: var(--text-secondary);
+            font-size: 0.85rem;
+            border-top: 1px solid var(--border);
+            max-width: var(--max-width);
+            margin: 0 auto;
+        }
+
+        .footer a {
+            color: var(--accent);
+            text-decoration: none;
+        }
+
+        .footer a:hover {
+            text-decoration: underline;
+        }
+
+        /* ── Responsive ── */
+        @media (max-width: 640px) {
+            .slide {
+                padding: 3rem 1rem;
+                min-height: auto;
+            }
+
+            .slide-number {
+                font-size: 3rem;
+                top: 1.5rem;
+                right: 1rem;
+            }
+
+            .slide h2 {
+                font-size: 1.5rem;
+            }
+
+            .diagram-grid.cols-2,
+            .diagram-grid.cols-3 {
+                grid-template-columns: 1fr;
+            }
+
+            .pipeline {
+                gap: 0.15rem;
+            }
+
+            .pipeline-step {
+                font-size: 0.6rem;
+                padding: 0.2rem 0.4rem;
+            }
+
+            .hero h1 {
+                font-size: 1.8rem;
+            }
+
+            table {
+                font-size: 0.78rem;
+            }
+
+            .tier-label {
+                min-width: 60px;
+                font-size: 0.65rem;
+            }
+
+            .tier-fill {
+                font-size: 0.6rem;
+                height: 26px;
+            }
+        }
+
+        /* ── Interactive controls (added for Local LLM series) ── */
+        .control-panel {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 1.25rem;
+            margin: 1.25rem 0;
+        }
+        .control-row {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 0.75rem;
+            margin-bottom: 0.75rem;
+        }
+        .control-row label {
+            font-family: var(--font-mono);
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+            min-width: 180px;
+        }
+        .control-row input[type="range"] {
+            flex: 1;
+            min-width: 160px;
+            accent-color: var(--accent);
+        }
+        .control-row input[type="number"],
+        .control-row select {
+            background: var(--bg-code);
+            border: 1px solid var(--border);
+            color: var(--text-primary);
+            border-radius: 4px;
+            padding: 0.3rem 0.5rem;
+            font-family: var(--font-mono);
+            font-size: 0.8rem;
+        }
+        .control-row .val {
+            font-family: var(--font-mono);
+            font-size: 0.85rem;
+            color: var(--accent);
+            min-width: 80px;
+            text-align: right;
+        }
+        .btn {
+            font-family: var(--font-mono);
+            font-size: 0.8rem;
+            padding: 0.4rem 0.9rem;
+            background: var(--accent-dim);
+            color: var(--accent);
+            border: 1px solid var(--accent);
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background 0.15s ease;
+        }
+        .btn:hover { background: rgba(170,189,89,0.2); }
+        .btn:disabled { opacity: 0.4; cursor: not-allowed; }
+        .btn.secondary {
+            background: var(--bg-code);
+            color: var(--text-secondary);
+            border-color: var(--border);
+        }
+        .result-box {
+            background: var(--bg-code);
+            border: 1px solid var(--border);
+            border-left: 3px solid var(--accent);
+            border-radius: 4px;
+            padding: 0.75rem 1rem;
+            font-family: var(--font-mono);
+            font-size: 0.85rem;
+            color: var(--text-primary);
+            margin-top: 0.75rem;
+        }
+        .result-box .line-label { color: var(--text-secondary); }
+        .result-box .line-val   { color: var(--accent); font-weight: 600; }
+        .metric-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 0.5rem;
+            margin-top: 0.75rem;
+        }
+        .metric {
+            background: var(--bg-code);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            padding: 0.6rem 0.8rem;
+            text-align: center;
+        }
+        .metric .metric-label {
+            font-family: var(--font-mono);
+            font-size: 0.7rem;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+        }
+        .metric .metric-value {
+            font-family: var(--font-display);
+            font-size: 1.25rem;
+            color: var(--accent);
+            font-weight: 600;
+            margin-top: 0.2rem;
+        }
+
+        /* Canvas / SVG containers */
+        .canvas-wrap {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 1rem;
+            margin: 1.25rem 0;
+            overflow-x: auto;
+        }
+        .canvas-wrap canvas,
+        .canvas-wrap svg {
+            display: block;
+            margin: 0 auto;
+            max-width: 100%;
+        }
+
+        /* Small inline badge */
+        .badge {
+            display: inline-block;
+            font-family: var(--font-mono);
+            font-size: 0.65rem;
+            padding: 0.1rem 0.45rem;
+            border-radius: 999px;
+            border: 1px solid var(--border);
+            color: var(--text-secondary);
+            vertical-align: middle;
+            margin-left: 0.3rem;
+        }
+        .badge.ok    { border-color: var(--accent); color: var(--accent); background: var(--accent-dim); }
+        .badge.warn  { border-color: #e3b174; color: #e3b174; background: rgba(227,177,116,0.08); }
+        .badge.bad   { border-color: #de805a; color: #de805a; background: rgba(222,128,90,0.08); }
+
+
+        /* ── LLM Inference Simulators additions ── */
+        .canvas-wrap canvas { image-rendering: auto; display: block; width: 100%; height: auto; }
+        .canvas-wrap svg { max-width: 100%; height: auto; }
+        .ladder { display: grid; gap: 0.4rem; margin: 1.25rem 0; }
+        .ladder-row {
+            display: grid; grid-template-columns: 11rem 1fr 7.5rem; gap: 0.75rem; align-items: center;
+            background: var(--bg-card); border: 1px solid var(--border); border-radius: 6px;
+            padding: 0.55rem 0.85rem; font-size: 0.88rem;
+        }
+        .ladder-row .rung { font-family: var(--font-display); font-weight: 600; color: var(--accent); }
+        .ladder-row .speed { font-family: var(--font-mono); font-size: 0.78rem; color: var(--text-secondary); text-align: right; }
+        .res-list { list-style: none; padding: 0; margin: 0.75rem 0; }
+        .res-list li { padding: 0.6rem 0; border-bottom: 1px solid var(--border); font-size: 0.92rem; }
+        .res-list li:last-child { border-bottom: none; }
+        .res-list .what { color: var(--text-secondary); display: block; font-size: 0.86rem; margin-top: 0.15rem; }
+        .res-list a { color: var(--accent); text-decoration: none; }
+        .res-list a:hover { text-decoration: underline; }
+        .qa { background: var(--bg-card); border: 1px solid var(--border); border-radius: 8px; margin: 0.6rem 0; padding: 0.2rem 1rem; }
+        .qa summary { cursor: pointer; padding: 0.6rem 0; font-weight: 600; }
+        .qa p, .qa ul { margin-bottom: 0.75rem; font-size: 0.92rem; }
+        .sim-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); gap: 0.4rem 1.25rem; }
+        .chart-pair { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1rem; }
+        .chart-title { font-family: var(--font-mono); font-size: 0.75rem; color: var(--text-secondary); margin-bottom: 0.3rem; }
+        .slide a { color: var(--accent); }
+        @media (max-width: 640px) {
+            .ladder-row { grid-template-columns: 1fr; gap: 0.2rem; }
+            .ladder-row .speed { text-align: left; }
+        }
+        .concepts { background: var(--bg-card); border: 1px solid var(--border); border-left: 3px solid var(--accent); border-radius: 6px; padding: 0.75rem 1rem; margin-top: 1.25rem; font-size: 0.88rem; }
+        .concepts p { margin: 0 0 0.4rem; color: var(--text-secondary); }
+        .concepts .chips { display: flex; flex-wrap: wrap; gap: 0.35rem 0.5rem; }
+        .concepts .chips a { border: 1px solid var(--border); border-radius: 999px; padding: 0.1rem 0.6rem; text-decoration: none; font-size: 0.82rem; }
+        .concepts .chips a:hover { border-color: var(--accent); }
+        .hero { overflow: hidden; }   /* the 600px glow must not widen the page on phones */
+        .chart-pair > *, .diagram-grid > *, .sim-grid > * { min-width: 0; }   /* let wide code scroll inside its column */
+        .slide p code, .slide li code, .slide td code { overflow-wrap: anywhere; }
+        @media (max-width: 640px) { .diagram-box { white-space: normal; max-width: 100%; } }   /* long boxes must wrap on phones */
+        /* FOptInf: keep long titles clear of the slide number on phones */
+        @media (max-width: 640px) { .slide h2 { padding-right: 3.6rem; } }
+        .sim-grid select, .sim-grid input[type="range"] { max-width: 100%; min-width: 0; }   /* long option labels must not spill into the next column */
+    </style>
+</head>
+<body>
+
+<header class="hero">
+    <div class="series-label">Silicon Photonics Fundamentals &mdash; Presentation 01</div>
+    <h1><span class="accent">Waveguides</span>, Couplers and WDM</h1>
+    <p class="subtitle">How a silicon wire guides light, and what the 220-nanometre platform makes cheap and what it makes hard: guided modes and group index, loss and bends, getting light on and off the chip, splitters and couplers, interferometers and rings, temperature and fabrication sensitivity, and the wavelength grids and multiplexers that put many channels on one fibre.</p>
+
+    <div class="tags">
+        <span class="tag">SOI</span>
+        <span class="tag">Guided modes</span>
+        <span class="tag">Group index</span>
+        <span class="tag">Grating couplers</span>
+        <span class="tag">Rings</span>
+        <span class="tag">WDM</span>
+    </div>
+
+    <div class="pipeline">
+        <span class="pipeline-step">Fibre</span>
+        <span class="pipeline-arrow">&rarr;</span>
+        <span class="pipeline-step">Coupler</span>
+        <span class="pipeline-arrow">&rarr;</span>
+        <span class="pipeline-step">Waveguide</span>
+        <span class="pipeline-arrow">&rarr;</span>
+        <span class="pipeline-step">Splitter / ring</span>
+        <span class="pipeline-arrow">&rarr;</span>
+        <span class="pipeline-step">WDM demux</span>
+    </div>
+</header>
+
+<section class="slide" id="slide-00">
+    <div class="slide-number">00</div>
+    <h2>Topics We'll Cover</h2>
+    <ul class="contents-list">
+        <li><a href="#slide-01">Why Silicon Photonics</a></li>
+        <li><a href="#slide-02">The SOI Platform and Its Index Contrast</a></li>
+        <li><a href="#slide-03">Guided Modes: Strip and Rib Waveguides</a></li>
+        <li><a href="#slide-04">Interactive: A Strip Waveguide, Solved</a></li>
+        <li><a href="#slide-05">Loss, Bends and Group Index</a></li>
+        <li><a href="#slide-06">Getting Light On and Off the Chip</a></li>
+        <li><a href="#slide-07">Splitters and Directional Couplers</a></li>
+        <li><a href="#slide-08">The Mach&ndash;Zehnder Interferometer as a Filter</a></li>
+        <li><a href="#slide-09">Ring Resonators: FSR, Q and Finesse</a></li>
+        <li><a href="#slide-10">Temperature and Fabrication Sensitivity</a></li>
+        <li><a href="#slide-11">WDM Grids: CWDM, LAN-WDM and DWDM</a></li>
+        <li><a href="#slide-12">Multiplexers: AWGs, Echelles, Rings and Lattices</a></li>
+        <li><a href="#slide-13">What to Take Away</a></li>
+    </ul>
+    <div class="concepts">
+        <p><strong>Concepts used here, and where they are explained.</strong> Each links to a glossary entry: this <a href="https://brendanjameslynskey.github.io/Optical_Hub_Silicon_Photonics/#glossary">series glossary</a>, or the glossaries of Fourier Optics for Inference, Compute in Transit, LLM Inference Simulators and FHE Accelerator Simulators for concepts those series already explain.</p>
+        <div class="chips"><a href="https://brendanjameslynskey.github.io/Optical_Hub_Silicon_Photonics/#g-sip" title="Optical circuits made with CMOS wafers, lithography and etch: silicon waveguides (transparent at 1310 and 1550 nm), germanium detectors, modulators and heaters on one chip. Silicon does not emit light efficiently, so the laser usually comes from another material.">Silicon photonics</a><a href="https://brendanjameslynskey.github.io/Optical_Hub_Silicon_Photonics/#g-soi" title="The common platform: a 220 nm silicon layer on 2 µm of buried oxide. Silicon&#x27;s index is about 3.48 at 1550 nm against oxide&#x27;s 1.44, a contrast of about 2 that allows sub-micron waveguides and micrometre bends.">Silicon-on-insulator (SOI) platform</a><a href="https://brendanjameslynskey.github.io/Optical_Hub_Silicon_Photonics/#g-mode" title="A field pattern that propagates along a waveguide unchanged, as exp(iβz). The effective index neff = β/k0 lies between the cladding and core indices; about 2.5 for a 500 × 220 nm silicon strip at 1550 nm.">Guided mode and effective index</a><a href="https://brendanjameslynskey.github.io/Optical_Hub_Silicon_Photonics/#g-strip" title="A strip (wire) is etched through the silicon: tightest bends, but its field touches the rough sidewalls. A rib is partly etched and leaves a slab: lower loss and room for electrical contacts, at the cost of larger bends.">Strip and rib waveguides</a><a href="https://brendanjameslynskey.github.io/Optical_Hub_Silicon_Photonics/#g-singlemode" title="The width and height below which a waveguide guides only its fundamental mode. Higher-order modes couple at bends and junctions, so routing guides are kept single-mode; for a 220 nm oxide-clad strip at 1550 nm the solver puts the TE cut-off near 0.5 µm width.">Single-mode condition</a><a href="https://brendanjameslynskey.github.io/Optical_Hub_Silicon_Photonics/#g-ng" title="ng = neff − λ dneff/dλ: the index that sets pulse delay, filter free spectral ranges and resonance shifts. A silicon wire&#x27;s own dispersion is strong: ng ≈ 4.0 against neff ≈ 2.5 for 500 × 220 nm.">Group index</a><a href="https://brendanjameslynskey.github.io/Optical_Hub_Silicon_Photonics/#g-loss" title="Sidewall roughness scatters light from strip waveguides: 3.6 dB/cm reported for a single-mode strip, 0.27 dB/cm for a shallow ridge. Bends radiate; at a 2 µm radius a silicon strip loses about 0.013 dB per 90°.">Propagation and bend loss</a><a href="https://brendanjameslynskey.github.io/Optical_Hub_Silicon_Photonics/#g-mfd" title="The width of a fibre&#x27;s guided mode: 10.4 µm at 1550 nm and 9.2 µm at 1310 nm for SMF-28 Ultra. A silicon wire&#x27;s mode is about half a micrometre, so butting one onto the other loses about 20 dB without a coupler.">Mode-field diameter and mode mismatch</a><a href="https://brendanjameslynskey.github.io/Optical_Hub_Silicon_Photonics/#g-grating" title="A grating etched into the waveguide that diffracts light up to a fibre held above the wafer. It allows wafer-level testing and placement anywhere on the die, but is narrowband and polarisation-dependent; the best research result is −0.58 dB with a bottom mirror.">Grating coupler</a><a href="https://brendanjameslynskey.github.io/Optical_Hub_Silicon_Photonics/#g-edge" title="A silicon taper narrowed until the mode spreads into a larger cladding guide that matches a fibre at the polished chip facet. Broadband and low-loss (0.36–0.66 dB per connection reported) but needs facet preparation and edge access.">Edge coupler (inverse taper)</a><a href="https://brendanjameslynskey.github.io/Optical_Hub_Silicon_Photonics/#g-coupler" title="Passive splitters. A directional coupler transfers sin2(κL) of the power across a narrow gap and is sensitive to gap and wavelength; a multimode interference (MMI) coupler splits by self-imaging and is more tolerant; a Y-branch splits adiabatically.">Directional couplers, MMIs and Y-branches</a><a href="https://brendanjameslynskey.github.io/Optical_Hub_Silicon_Photonics/#g-mzi" title="Split, two arms, recombine: the bar port carries cos2(Δφ/2). With unequal arms it is a periodic filter with FSR = λ2/(ngΔL); with a phase shifter in one arm, a switch or modulator.">Mach&ndash;Zehnder interferometer (MZI)</a><a href="https://brendanjameslynskey.github.io/Optical_Hub_Silicon_Photonics/#g-ring" title="A closed loop beside a bus waveguide that resonates when its round trip holds a whole number of wavelengths. All-pass rings notch the bus; add-drop rings route a wavelength to a second bus. Compact filters, modulators and WDM elements.">Ring resonator</a><a href="https://brendanjameslynskey.github.io/Optical_Hub_Silicon_Photonics/#g-fsr" title="The wavelength spacing between successive resonances or transmission peaks: λ2/(ngL) for a ring of circumference L. About 9.5 nm for a 10 µm-radius silicon ring at 1550 nm.">Free spectral range (FSR)</a><a href="https://brendanjameslynskey.github.io/Optical_Hub_Silicon_Photonics/#g-q" title="Q = λ/ΔλFWHM, set by round-trip loss and bus coupling; a loaded Q of 10,000 at 1550 nm is a 0.155 nm linewidth. Finesse = FSR/ΔλFWHM. Higher Q sharpens a filter or modulator but narrows its optical bandwidth and its tolerance to drift.">Q factor, linewidth and finesse</a><a href="https://brendanjameslynskey.github.io/Optical_Hub_Silicon_Photonics/#g-thermo" title="Silicon&#x27;s index rises by 1.8×10−4 per kelvin at room temperature, moving a silicon-wire resonance by about 72 pm/K at 1550 nm: about 2 K detunes a Q = 10,000 ring by a full linewidth. It makes heaters effective phase shifters and makes rings need tuning.">Thermo-optic effect</a><a href="https://brendanjameslynskey.github.io/Optical_Hub_Silicon_Photonics/#g-fabvar" title="Nanometre changes in waveguide width and silicon thickness shift resonances: about 0.5 nm per nm of width and 1.3 nm per nm of thickness for a 500 × 220 nm strip (semi-vectorial estimate). Rings and filters are tuned after fabrication.">Fabrication variation</a><a href="https://brendanjameslynskey.github.io/Optical_Hub_Silicon_Photonics/#g-wdm" title="Several channels on one fibre, each on its own wavelength, combined by a multiplexer and separated by a demultiplexer. It multiplies bandwidth per fibre without faster electronics.">Wavelength-division multiplexing (WDM)</a><a href="https://brendanjameslynskey.github.io/Optical_Hub_Silicon_Photonics/#g-grids" title="Standard channel plans. CWDM: 20 nm spacing, 18 wavelengths 1271–1611 nm (ITU-T G.694.2; CWDM4 uses 1271–1331 nm). LAN-WDM: 800 GHz near 1300 nm (100GBASE-LR4). DWDM: anchored at 193.1 THz with 12.5–100 GHz spacing (ITU-T G.694.1).">CWDM, LAN-WDM and DWDM grids</a><a href="https://brendanjameslynskey.github.io/Optical_Hub_Silicon_Photonics/#g-awg" title="Integrated demultiplexers. An AWG&#x27;s stepped-length arms tilt the phase front by wavelength and a slab focuses each wavelength to its own port, an integrated Fourier optic; an echelle uses a reflective grating in a slab. AWGs suit dense spacing, echelles coarse.">Arrayed waveguide grating (AWG) and echelle grating</a><a href="https://brendanjameslynskey.github.io/LLM_Hub_Fourier_Optics_Inference/#g-lens" title="In coherent light, the field in a lens&#x27;s back focal plane is the 2-D Fourier transform of the field in its front focal plane; a point at distance x from the axis holds spatial frequency x/(λf). The transform is computed by propagation, in one pass, for every pixel at once.">The lens as a Fourier transformer</a><a href="https://brendanjameslynskey.github.io/LLM_Hub_Fourier_Optics_Inference/#g-mzimesh" title="A triangular (Reck) or rectangular (Clements) grid of MZIs implements any N×N unitary, including the DFT, on a chip: N(N−1)/2 MZIs, each with a phase shifter that must be calibrated and held.">Mach–Zehnder interferometer (MZI) meshes</a><a href="https://brendanjameslynskey.github.io/LLM_Hub_Fourier_Optics_Inference/#g-onchipfft" title="On-chip alternatives to a free-space lens: diffractive or slab-lens structures, MZI meshes, and coupler and delay-line FFT circuits (used for all-optical OFDM). They are compact and fast but much smaller than a free-space 4f system.">Integrated optical Fourier transforms</a></div>
+    </div>
+</section>
+
+<section class="slide" id="slide-01">
+    <div class="slide-number">01</div>
+    <h2>Why Silicon Photonics</h2>
+    <p>Silicon photonics builds optical circuits with the same wafers, lithography and etch tools as CMOS electronics. Silicon is transparent at the two telecom windows, 1310 nm and 1550 nm, because its bandgap corresponds to shorter wavelengths, so photons at 1310 and 1550 nm are not absorbed; germanium, grown on the same wafer, absorbs there and makes the detector. What silicon cannot do well is emit light, so the laser usually comes from elsewhere (<a href="https://brendanjameslynskey.github.io/OptSiP_03_Lasers_and_Energy_per_Bit/">deck 03</a>).</p>
+    <div class="diagram-grid cols-2">
+        <div class="diagram-panel accent-border">
+            <h4>What the platform gives</h4>
+            <ul>
+                <li><strong>Wafer-scale manufacturing</strong> on 200 and 300 mm lines, with process control inherited from electronics.</li>
+                <li><strong>High index contrast</strong> (silicon against oxide, <a href="#slide-02">slide 02</a>): sub-micron waveguides and bends of a few micrometres, so thousands of devices fit on a die.</li>
+                <li><strong>A full device set:</strong> couplers, splitters, filters, modulators, germanium detectors and heaters on one chip.</li>
+            </ul>
+        </div>
+        <div class="diagram-panel accent-border">
+            <h4>What it costs</h4>
+            <ul>
+                <li><strong>No native laser</strong>: silicon's bandgap is indirect.</li>
+                <li><strong>Sensitivity</strong>: the same contrast that shrinks devices makes them sensitive to nanometre width errors and to temperature (<a href="#slide-10">slide 10</a>).</li>
+                <li><strong>A large mode mismatch to fibre</strong>, which makes coupling and packaging a major part of the cost (<a href="#slide-06">slide 06</a>).</li>
+                <li><strong>Polarisation dependence</strong>: TE and TM modes behave very differently in a thin silicon layer.</li>
+            </ul>
+        </div>
+    </div>
+    <p style="font-size:0.85rem;">Overviews: Soref, &ldquo;The past, present, and future of silicon photonics&rdquo; (<a href="https://doi.org/10.1109/JSTQE.2006.883151">IEEE JSTQE 12, 2006</a>); Thomson et al., &ldquo;Roadmap on silicon photonics&rdquo; (<a href="https://doi.org/10.1088/2040-8978/18/7/073003">J. Opt. 18, 073003, 2016</a>). This series is the foundation for the <a href="https://github.com/BrendanJamesLynskey/Optical_Hub_Data_Centres">data-centre</a> and <a href="https://github.com/BrendanJamesLynskey/Optical_Hub_AI_Processing">AI-processing</a> series, which link its glossary for device physics.</p>
+</section>
+
+<section class="slide" id="slide-02">
+    <div class="slide-number">02</div>
+    <h2>The SOI Platform and Its Index Contrast</h2>
+    <div class="canvas-wrap">
+        <svg viewBox="0 0 760 250" width="760" height="250" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Cross-section of a silicon-on-insulator wafer: silicon substrate, 2 micrometre buried oxide, 220 nanometre silicon device layer etched into a strip waveguide and a rib waveguide, oxide cladding on top">
+            <style>
+                .si  { fill: rgba(151,205,198,0.35); stroke: #97cdc6; }
+                .ox  { fill: rgba(227,177,116,0.10); stroke: #e3b174; stroke-dasharray: 4 3; }
+                .sub { fill: rgba(162,151,139,0.18); stroke: #a2978b; }
+                .t   { fill: #efe8dc; font-family: 'Geist Mono', monospace; font-size: 11px; }
+                .d   { fill: #a2978b; font-family: 'Geist Mono', monospace; font-size: 10px; }
+                .m   { fill: #aabd59; font-family: 'Geist Mono', monospace; font-size: 11px; }
+            </style>
+            <rect x="40" y="190" width="680" height="45" class="sub"/>
+            <text x="50" y="217" class="t">silicon substrate</text>
+            <rect x="40" y="110" width="680" height="80" class="ox"/>
+            <text x="50" y="160" class="t">buried oxide (BOX), 2 &micro;m, n &asymp; 1.44</text>
+            <rect x="40" y="40" width="680" height="70" class="ox"/>
+            <text x="50" y="58" class="d">oxide cladding (or air)</text>
+            <rect x="200" y="88" width="50" height="22" class="si"/>
+            <text x="170" y="82" class="t">strip</text>
+            <text x="172" y="128" class="d">~0.5 &times; 0.22 &micro;m</text>
+            <rect x="420" y="100" width="220" height="10" class="si"/>
+            <rect x="500" y="88" width="60" height="12" class="si"/>
+            <text x="505" y="82" class="t">rib</text>
+            <text x="450" y="128" class="d">partial etch, slab left</text>
+            <line x1="700" y1="88" x2="700" y2="110" stroke="#aabd59"/>
+            <text x="655" y="100" class="m">220 nm</text>
+            <text x="270" y="102" class="m">Si, n &asymp; 3.48</text>
+        </svg>
+    </div>
+    <ul>
+        <li><strong>The common platform</strong> is a 220 nm silicon device layer on 2 &micro;m of buried oxide: the foundry platforms surveyed in a 2013 review (imec, CEA-Leti and IHP among them) all use it (<a href="https://doi.org/10.1515/nanoph-2013-0034">Nanophotonics, 2013</a>). Thicker layers (300 nm and more, and micrometre-scale SOI) exist for lower loss and polarisation independence.</li>
+        <li><strong>Index contrast:</strong> silicon's index is about 3.48 at 1550 nm (from Li's dispersion data, <a href="https://doi.org/10.1063/1.555624">J. Phys. Chem. Ref. Data 9, 561, 1980</a>) and fused silica's about 1.44 (Malitson's Sellmeier fit, <a href="https://doi.org/10.1364/JOSA.55.001205">JOSA 55, 1205, 1965</a>). The widget on <a href="#slide-04">slide 04</a> evaluates both fits live: 3.476 and 1.444 at 1550 nm.</li>
+        <li><strong>Why it matters:</strong> a contrast of &Delta;n &asymp; 2 confines light to a cross-section a quarter of a micrometre high, so bends can be a few micrometres in radius. Glass waveguides, with a contrast of a few per cent, need far larger bends.</li>
+        <li><strong>The 2 &micro;m BOX</strong> keeps the guided mode's evanescent tail away from the silicon substrate, which would otherwise draw light out (substrate leakage).</li>
+    </ul>
+</section>
+
+<section class="slide" id="slide-03">
+    <div class="slide-number">03</div>
+    <h2>Guided Modes: Strip and Rib Waveguides</h2>
+    <p>Light stays in a high-index core by total internal reflection. Solving Maxwell's equations for the cross-section gives a discrete set of <strong>guided modes</strong>, each a field pattern that propagates unchanged as exp(i&beta;z). The <strong>effective index</strong> n<sub>eff</sub> = &beta;/k<sub>0</sub> lies between the cladding and core indices: the more of the mode sits in the silicon, the closer n<sub>eff</sub> is to 3.48.</p>
+    <div class="diagram-grid cols-2">
+        <div class="diagram-panel accent-border">
+            <h4>Strip (wire) waveguide</h4>
+            <ul>
+                <li>Etched through the full 220 nm. Strongest confinement, tightest bends (radius of a few &micro;m).</li>
+                <li>The guided field touches the etched sidewalls, so sidewall roughness scatters light: losses of a few dB/cm (<a href="#slide-05">slide 05</a>).</li>
+                <li>Used for routing, compact rings and dense circuits.</li>
+            </ul>
+        </div>
+        <div class="diagram-panel accent-border">
+            <h4>Rib (ridge) waveguide</h4>
+            <ul>
+                <li>Partially etched, leaving a slab. The mode is pushed into the slab sideways, so it sees less sidewall: lower loss.</li>
+                <li>Bends must be larger, or light leaks into the slab.</li>
+                <li>The slab lets electrical contacts reach the core: modulators and some detectors are rib structures (<a href="https://brendanjameslynskey.github.io/OptSiP_02_Modulators_and_Detectors/#slide-03">deck 02</a>).</li>
+            </ul>
+        </div>
+    </div>
+    <ul>
+        <li><strong>Single-mode condition.</strong> Above a certain width the waveguide also guides a first higher-order mode, which couples to the fundamental at every bend and junction. Routing waveguides are kept single-mode; the widget finds the cut-off for a 220 nm strip near 0.5 &micro;m at 1550 nm.</li>
+        <li><strong>Polarisation.</strong> In a 220 nm layer the TE-like mode (electric field in the wafer plane) is well confined and the TM-like mode is not; most silicon circuits are designed for TE, and a fibre's random polarisation has to be split and rotated at the input.</li>
+        <li>Design references: Bogaerts and Chrostowski, &ldquo;Silicon photonics circuit design: methods, tools and challenges&rdquo; (<a href="https://doi.org/10.1002/lpor.201700237">Laser Photonics Rev. 12, 1700237, 2018</a>).</li>
+    </ul>
+</section>
+
+<section class="slide" id="slide-04">
+    <div class="slide-number">04</div>
+    <h2>Interactive: A Strip Waveguide, Solved</h2>
+    <p>A two-dimensional finite-difference mode solver for an oxide-clad silicon strip, running in your browser. It solves the semi-vectorial equation for the TE-like field E<sub>x</sub> on a 20 nm grid, with silicon and oxide indices from Li's and Malitson's dispersion fits, and derives everything else by re-solving: the group index from two wavelengths, the sensitivities from perturbed widths, heights and silicon index (dn/dT = 1.8&times;10<sup>&minus;4</sup> K<sup>&minus;1</sup>, Komma et al., <a href="https://doi.org/10.1063/1.4738989">APL 101, 041905, 2012</a>), and the fibre coupling loss from the overlap with a Gaussian of the SMF-28 Ultra mode-field diameter (9.2 &micro;m at 1310 nm, 10.4 &micro;m at 1550 nm, <a href="https://csmedia.corning.com/media/worldwide/coc/documents/Fiber/product-information-sheets/PI-1424-AEN.pdf">Corning PI-1424</a>).</p>
+    <div class="control-panel">
+        <div class="sim-grid">
+            <div class="control-row"><label for="wg-w">Width (&micro;m)</label><input type="range" id="wg-w" min="0.30" max="1.20" step="0.01" value="0.50"><span class="val" id="wg-w-val">0.50</span></div>
+            <div class="control-row"><label for="wg-h">Height (&micro;m)</label><input type="range" id="wg-h" min="0.15" max="0.40" step="0.01" value="0.22"><span class="val" id="wg-h-val">0.22</span></div>
+            <div class="control-row"><label for="wg-l">Wavelength</label><select id="wg-l"><option value="1.55" selected>1550 nm (C band)</option><option value="1.31">1310 nm (O band)</option></select></div>
+            <div class="control-row"><label for="wg-r">Ring radius (&micro;m)</label><input type="range" id="wg-r" min="3" max="50" step="1" value="10"><span class="val" id="wg-r-val">10</span></div>
+        </div>
+        <div class="metric-grid">
+            <div class="metric"><div class="metric-label">Effective index</div><div class="metric-value" id="wg-neff">&mdash;</div></div>
+            <div class="metric"><div class="metric-label">Group index</div><div class="metric-value" id="wg-ng">&mdash;</div></div>
+            <div class="metric"><div class="metric-label">First higher mode</div><div class="metric-value" id="wg-te1">&mdash;</div></div>
+            <div class="metric"><div class="metric-label">Power in core</div><div class="metric-value" id="wg-conf">&mdash;</div></div>
+            <div class="metric"><div class="metric-label">Ring FSR</div><div class="metric-value" id="wg-fsr">&mdash;</div></div>
+            <div class="metric"><div class="metric-label">Shift per nm of width</div><div class="metric-value" id="wg-dw">&mdash;</div></div>
+            <div class="metric"><div class="metric-label">Shift per nm of height</div><div class="metric-value" id="wg-dh">&mdash;</div></div>
+            <div class="metric"><div class="metric-label">Shift per kelvin</div><div class="metric-value" id="wg-dt">&mdash;</div></div>
+            <div class="metric"><div class="metric-label">Butt-coupled to SMF</div><div class="metric-value" id="wg-butt">&mdash;</div></div>
+        </div>
+        <div class="canvas-wrap" style="padding:0.4rem;"><canvas id="wg-canvas" width="720" height="420"></canvas></div>
+        <p id="wg-note" style="font-size:0.85rem; margin-top:0.4rem;"></p>
+    </div>
+    <p style="font-size:0.85rem;">Limits: semi-vectorial, not fully vectorial, so n<sub>eff</sub> and n<sub>g</sub> are approximate (a full-vector solver is needed near cut-off and for TM); oxide cladding all round; the temperature shift counts silicon's thermo-optic coefficient only and neglects the oxide's; the fibre overlap assumes the fibre is butted straight onto the chip facet with no taper. Sensitivities are resonance shifts of a ring or filter: d&lambda; = (&lambda;/n<sub>g</sub>)&middot;dn<sub>eff</sub>.</p>
+        <style>@media (max-width: 640px) { .sim-grid .control-row label { min-width: 0; flex-basis: 100%; } .sim-grid .control-row input[type="range"] { min-width: 0; } }</style>
+    <script>
+    (function(){
+        const $ = id => document.getElementById(id);
+        // Silicon at room temperature: Li (1980); fused silica: Malitson (1965). Wavelength in µm.
+        function nSi(l) { const l2 = l * l; return Math.sqrt(11.6858 + 0.939816 / l2 + 0.00810461 * 1.1071 * 1.1071 / (l2 - 1.1071 * 1.1071)); }
+        function nSiO2(l) { const l2 = l * l;
+            return Math.sqrt(1 + 0.6961663 * l2 / (l2 - 0.0684043 ** 2) + 0.4079426 * l2 / (l2 - 0.1162414 ** 2) + 0.8974794 * l2 / (l2 - 9.896161 ** 2)); }
+        const O = { dx: 0.02, X: 2.4, Y: 1.4 };
+        // permittivity on the grid, area-averaged per cell so that sub-cell width and height changes move the answer smoothly
+        function grid(w, h, lam, dn) {
+            const dx = O.dx, nx = Math.round(O.X / dx), ny = Math.round(O.Y / dx);
+            const n1 = nSi(lam) + dn, n2 = nSiO2(lam), e1 = n1 * n1, e2 = n2 * n2, eps = new Float64Array(nx * ny);
+            const ov = (a0, a1, b0, b1) => Math.max(0, Math.min(a1, b1) - Math.max(a0, b0));
+            for (let j = 0; j < ny; j++) for (let i = 0; i < nx; i++) {
+                const x0 = -O.X / 2 + i * dx, y0 = -O.Y / 2 + j * dx;
+                eps[j * nx + i] = e2 + ov(x0, x0 + dx, -w / 2, w / 2) * ov(y0, y0 + dx, -h / 2, h / 2) / (dx * dx) * (e1 - e2);
+            }
+            return { nx, ny, dx, eps, k0: 2 * Math.PI / lam, n1, n2 };
+        }
+        // y = A x: semi-vectorial Ex operator (n² weighting across vertical sidewalls) + k0² n²
+        function applyA(G, x, y) {
+            const { nx, ny, dx, eps, k0 } = G, d2 = 1 / (dx * dx), k2 = k0 * k0;
+            for (let j = 0; j < ny; j++) for (let i = 0; i < nx; i++) {
+                const p = j * nx + i, e = eps[p], eR = i < nx - 1 ? eps[p + 1] : e, eL = i > 0 ? eps[p - 1] : e;
+                const xR = i < nx - 1 ? x[p + 1] : 0, xL = i > 0 ? x[p - 1] : 0, xU = j < ny - 1 ? x[p + nx] : 0, xD = j > 0 ? x[p - nx] : 0;
+                y[p] = d2 * (2 * eR / (eR + e) * xR + 2 * eL / (eL + e) * xL - (2 * e / (eR + e) + 2 * e / (eL + e)) * x[p])
+                     + d2 * (xU + xD - 2 * x[p]) + k2 * e * x[p];
+            }
+        }
+        const dot = (a, b) => { let s = 0; for (let i = 0; i < a.length; i++) s += a[i] * b[i]; return s; };
+        // (σI − A) x = b by BiCGSTAB
+        function solve(G, sig, b, x0) {
+            const n = b.length, x = Float64Array.from(x0), r = new Float64Array(n), t = new Float64Array(n);
+            const M = (v, out) => { applyA(G, v, out); for (let i = 0; i < n; i++) out[i] = sig * v[i] - out[i]; };
+            M(x, t); for (let i = 0; i < n; i++) r[i] = b[i] - t[i];
+            const rh = Float64Array.from(r), p = new Float64Array(n), v = new Float64Array(n), s = new Float64Array(n);
+            let rho = 1, al = 1, om = 1; const bn = Math.sqrt(dot(b, b)) || 1;
+            for (let it = 0; it < 600; it++) {
+                const rn = dot(rh, r), be = (rn / rho) * (al / om); rho = rn;
+                for (let i = 0; i < n; i++) p[i] = r[i] + be * (p[i] - om * v[i]);
+                M(p, v); al = rho / dot(rh, v);
+                for (let i = 0; i < n; i++) s[i] = r[i] - al * v[i];
+                if (Math.sqrt(dot(s, s)) / bn < 1e-8) { for (let i = 0; i < n; i++) x[i] += al * p[i]; break; }
+                M(s, t); om = dot(t, s) / dot(t, t);
+                for (let i = 0; i < n; i++) { x[i] += al * p[i] + om * s[i]; r[i] = s[i] - om * t[i]; }
+                if (Math.sqrt(dot(r, r)) / bn < 1e-8) break;
+            }
+            return x;
+        }
+        // shifted inverse iteration for the highest-index mode of x-parity par (+1 even: fundamental; −1 odd: first higher order)
+        function mode(w, h, lam, dn, par, start) {
+            const G = grid(w, h, lam, dn), n = G.nx * G.ny, sig = G.k0 * G.k0 * G.n1 * G.n1 * 1.0001;
+            let x = new Float64Array(n);
+            if (start) x.set(start);
+            else for (let j = 0; j < G.ny; j++) for (let i = 0; i < G.nx; i++) {
+                const a = (i + 0.5) / G.nx - 0.5, b = (j + 0.5) / G.ny - 0.5;
+                x[j * G.nx + i] = Math.exp(-40 * (a * a + b * b)) * (par > 0 ? 1 : a * 10);
+            }
+            const sym = v => { for (let j = 0; j < G.ny; j++) for (let i = 0; i < G.nx / 2; i++) {
+                const a = j * G.nx + i, b = j * G.nx + (G.nx - 1 - i), m = (v[a] + par * v[b]) / 2; v[a] = m; v[b] = par * m; } };
+            let l2 = 0; const ax = new Float64Array(n);
+            for (let k = 0; k < 60; k++) {
+                sym(x); const nr = Math.sqrt(dot(x, x)); for (let i = 0; i < n; i++) x[i] /= nr;
+                applyA(G, x, ax); const rq = dot(x, ax);
+                if (k > 2 && Math.abs(rq - l2) < 1e-10 * Math.abs(rq)) { l2 = rq; break; }
+                l2 = rq; x = solve(G, sig, x, x);
+            }
+            return { neff: Math.sqrt(Math.max(l2, 0)) / G.k0, f: x, G };
+        }
+        function analyse(w, h, lam) {
+            const m0 = mode(w, h, lam, 0, 1), f = m0.f, G = m0.G, ne = m0.neff;
+            const nAt = (ww, hh, ll, dn) => mode(ww, hh, ll, dn, 1, f).neff;
+            const dl = 0.005, dd = 0.002;
+            const ng = ne - lam * (nAt(w, h, lam + dl, 0) - nAt(w, h, lam - dl, 0)) / (2 * dl);
+            const dW = lam / ng * (nAt(w + dd, h, lam, 0) - nAt(w - dd, h, lam, 0)) / (2 * dd);
+            const dH = lam / ng * (nAt(w, h + dd, lam, 0) - nAt(w, h - dd, lam, 0)) / (2 * dd);
+            const dT = lam / ng * (nAt(w, h, lam, 1e-3) - nAt(w, h, lam, -1e-3)) / 2e-3 * 1.8e-4;
+            const m1 = mode(w, h, lam, 0, -1);
+            const mfd = lam > 1.4 ? 10.4 : 9.2, w0 = mfd / 2;
+            let core = 0, tot = 0, ab = 0;
+            for (let j = 0; j < G.ny; j++) for (let i = 0; i < G.nx; i++) {
+                const x = -O.X / 2 + (i + 0.5) * G.dx, y = -O.Y / 2 + (j + 0.5) * G.dx, v = f[j * G.nx + i];
+                tot += v * v; if (Math.abs(x) < w / 2 && Math.abs(y) < h / 2) core += v * v;
+                ab += v * Math.exp(-(x * x + y * y) / (w0 * w0));
+            }
+            const eta = ab * ab / (tot * Math.PI * w0 * w0 / 2 / (G.dx * G.dx));
+            return { w, h, lam, neff: ne, ng, dW, dH, dT, n1: m1.neff, guided1: m1.neff > G.n2 + 0.01, nclad: G.n2, nsi: G.n1,
+                     conf: core / tot, butt: -10 * Math.log10(eta), mfd, f, G };
+        }
+        function draw(r) {
+            const c = $('wg-canvas'), ctx = c.getContext('2d'), { nx, ny } = r.G, W = c.width, H = c.height;
+            let mx = 0; for (const v of r.f) mx = Math.max(mx, v * v);
+            const img = ctx.createImageData(nx, ny);
+            for (let j = 0; j < ny; j++) for (let i = 0; i < nx; i++) {
+                const t = Math.pow(r.f[j * nx + i] ** 2 / mx, 0.5), k = 4 * ((ny - 1 - j) * nx + i);
+                img.data[k] = 28 + t * (170 - 28); img.data[k + 1] = 24 + t * (189 - 24); img.data[k + 2] = 21 + t * (89 - 21); img.data[k + 3] = 255;
+            }
+            const off = document.createElement('canvas'); off.width = nx; off.height = ny; off.getContext('2d').putImageData(img, 0, 0);
+            ctx.imageSmoothingEnabled = true; ctx.drawImage(off, 0, 0, W, H);
+            const sx = W / O.X, sy = H / O.Y;
+            ctx.strokeStyle = '#97cdc6'; ctx.lineWidth = 2;
+            ctx.strokeRect(W / 2 - r.w / 2 * sx, H / 2 - r.h / 2 * sy, r.w * sx, r.h * sy);
+            ctx.fillStyle = '#efe8dc'; ctx.font = '22px "Geist Mono", monospace';
+            ctx.fillText('|Ex|², TE-like fundamental mode', 14, 30);
+            ctx.fillStyle = '#a2978b'; ctx.font = '18px "Geist Mono", monospace';
+            ctx.fillText('window ' + O.X + ' × ' + O.Y + ' µm, oxide-clad; outline: silicon core', 14, H - 14);
+        }
+        let last = null, busy = false, again = false;
+        const fmt = (v, d) => v.toFixed(d);
+        function show() {
+            const r = last, R = +$('wg-r').value;
+            $('wg-r-val').textContent = R;
+            if (!r) return;
+            const fsr = r.lam * r.lam / (r.ng * 2 * Math.PI * R) * 1000;
+            $('wg-neff').textContent = fmt(r.neff, 3);
+            $('wg-ng').textContent = fmt(r.ng, 2);
+            $('wg-te1').textContent = r.guided1 ? 'guided' : 'cut off';
+            $('wg-conf').textContent = fmt(100 * r.conf, 0) + '%';
+            $('wg-fsr').textContent = fmt(fsr, 1) + ' nm';
+            $('wg-dw').textContent = fmt(r.dW, 2) + ' nm/nm';
+            $('wg-dh').textContent = fmt(r.dH, 2) + ' nm/nm';
+            $('wg-dt').textContent = fmt(r.dT * 1e6, 0) + ' pm/K';
+            $('wg-butt').textContent = fmt(r.butt, 1) + ' dB';
+            $('wg-note').innerHTML = 'Silicon n = ' + fmt(r.nsi, 3) + ', oxide n = ' + fmt(r.nclad, 3) + ' at ' + Math.round(r.lam * 1000) + ' nm. ' +
+                (r.guided1 ? 'This width also guides a first higher-order (odd) mode: the guide is <strong>multimode</strong>, fine for a low-loss straight run but not for bends and splitters.'
+                           : 'The first higher-order (odd) mode is cut off: the guide is <strong>single-mode</strong> for TE.') +
+                ' Butt coupling uses a fibre mode-field diameter of ' + r.mfd + ' µm.';
+            window.wgState = { neff: r.neff, ng: r.ng, guided1: r.guided1, conf: r.conf, fsr, dW: r.dW, dH: r.dH, dTpm: r.dT * 1e6, butt: r.butt, nsi: r.nsi, nclad: r.nclad };
+        }
+        function run() {
+            if (busy) { again = true; return; }
+            busy = true;
+            const w = +$('wg-w').value, h = +$('wg-h').value, lam = +$('wg-l').value;
+            $('wg-w-val').textContent = w.toFixed(2); $('wg-h-val').textContent = h.toFixed(2);
+            $('wg-note').textContent = 'Solving…';
+            setTimeout(() => {
+                last = analyse(w, h, lam); draw(last); show(); busy = false;
+                if (again) { again = false; run(); }
+            }, 20);
+        }
+        ['wg-w', 'wg-h'].forEach(id => $(id).addEventListener('input', () => { $(id + '-val').textContent = (+$(id).value).toFixed(2); }));
+        ['wg-w', 'wg-h', 'wg-l'].forEach(id => $(id).addEventListener('change', run));
+        $('wg-r').addEventListener('input', show);
+        window.wgDemo = { set(o) { for (const [k, v] of Object.entries(o)) $(k).value = v; last = analyse(+$('wg-w').value, +$('wg-h').value, +$('wg-l').value); draw(last); show(); return window.wgState; } };
+        run();
+    })();
+    </script>
+</section>
+
+<section class="slide" id="slide-05">
+    <div class="slide-number">05</div>
+    <h2>Loss, Bends and Group Index</h2>
+    <div class="table-wrap">
+    <table>
+        <tr><th>Waveguide</th><th>Reported loss</th><th>Source</th></tr>
+        <tr><td>Single-mode strip, TE, 1.5 &micro;m</td><td>3.6 &plusmn; 0.1 dB/cm</td><td>Vlasov and McNab (<a href="https://doi.org/10.1364/OPEX.12.001622">Opt. Express 12, 1622, 2004</a>)</td></tr>
+        <tr><td>Strip, 90&deg; bend, radius 1 &micro;m</td><td>0.086 &plusmn; 0.005 dB per bend</td><td>same</td></tr>
+        <tr><td>Strip, 90&deg; bend, radius 2 &micro;m</td><td>0.013 &plusmn; 0.005 dB per bend</td><td>same</td></tr>
+        <tr><td>Shallow ridge, 0.25 &times; 2 &micro;m, 50 nm etch, C band</td><td>0.274 &plusmn; 0.008 dB/cm</td><td>Dong et al. (<a href="https://doi.org/10.1364/OE.18.014474">Opt. Express 18, 14474, 2010</a>)</td></tr>
+    </table>
+    </div>
+    <ul>
+        <li><strong>Sidewall roughness</strong> dominates loss in strips; a wider or shallower-etched guide pulls the field off the sidewalls and loses an order of magnitude less, at the cost of bend radius. Circuits often route in wide, low-loss guides and taper to single-mode only where they must.</li>
+        <li><strong>Bends</strong> radiate as the mode is pushed outward; with silicon's contrast the loss is already small at a 2 &micro;m radius.</li>
+        <li><strong>Group index.</strong> Pulses and the spacing of filter resonances follow the group index n<sub>g</sub> = n<sub>eff</sub> &minus; &lambda; dn<sub>eff</sub>/d&lambda;, not n<sub>eff</sub>. In a silicon wire the waveguide's own dispersion is strong: the solver on <a href="#slide-04">slide 04</a> gives n<sub>eff</sub> &asymp; 2.5 but n<sub>g</sub> &asymp; 4.0 for 500 &times; 220 nm at 1550 nm. Every free spectral range and delay in this deck uses n<sub>g</sub>.</li>
+    </ul>
+</section>
+
+<section class="slide" id="slide-06">
+    <div class="slide-number">06</div>
+    <h2>Getting Light On and Off the Chip</h2>
+    <p>A standard single-mode fibre carries a mode about 10 &micro;m across (10.4 &micro;m at 1550 nm, Corning's datasheet); a silicon wire's mode is about half a micrometre. Butting one onto the other loses around 20 dB (<a href="#slide-04">slide 04</a> computes it). Two families of coupler fix the mismatch:</p>
+    <div class="canvas-wrap">
+        <svg viewBox="0 0 760 200" width="760" height="200" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Left: a grating coupler with a fibre tilted above the chip surface. Right: an edge coupler with an inverse taper meeting a fibre at the polished chip facet.">
+            <style>
+                .si  { fill: rgba(151,205,198,0.35); stroke: #97cdc6; }
+                .fb  { fill: rgba(227,177,116,0.12); stroke: #e3b174; }
+                .ox  { fill: rgba(162,151,139,0.12); stroke: #3a322b; }
+                .t   { fill: #efe8dc; font-family: 'Geist Mono', monospace; font-size: 11px; }
+                .d   { fill: #a2978b; font-family: 'Geist Mono', monospace; font-size: 10px; }
+                .lt  { stroke: #aabd59; stroke-width: 2; fill: none; }
+            </style>
+            <rect x="20" y="120" width="330" height="40" class="ox"/>
+            <rect x="20" y="112" width="120" height="8" class="si"/>
+            <g class="si"><rect x="140" y="112" width="8" height="8"/><rect x="156" y="112" width="8" height="8"/><rect x="172" y="112" width="8" height="8"/><rect x="188" y="112" width="8" height="8"/><rect x="204" y="112" width="8" height="8"/><rect x="220" y="112" width="8" height="8"/><rect x="236" y="112" width="8" height="8"/></g>
+            <rect x="0" y="0" width="34" height="120" class="fb" transform="translate(205 4) rotate(10)"/>
+            <path class="lt" d="M213 40 L195 108"/>
+            <path class="lt" d="M180 116 L60 116"/>
+            <text x="30" y="180" class="t">grating coupler</text>
+            <text x="30" y="195" class="d">fibre tilted off vertical, on the wafer surface</text>
+            <rect x="420" y="120" width="250" height="40" class="ox"/>
+            <polygon points="420,113 600,115 600,117 420,119" class="si"/>
+            <rect x="600" y="112" width="70" height="8" class="si"/>
+            <line x1="670" y1="100" x2="670" y2="170" stroke="#3a322b" stroke-dasharray="3 3"/>
+            <rect x="672" y="96" width="80" height="40" class="fb"/>
+            <path class="lt" d="M740 116 L430 116"/>
+            <text x="420" y="180" class="t">edge coupler (inverse taper)</text>
+            <text x="420" y="195" class="d">fibre at the diced, polished facet</text>
+        </svg>
+    </div>
+    <div class="table-wrap">
+    <table>
+        <tr><th></th><th>Grating coupler</th><th>Edge coupler</th></tr>
+        <tr><td>Where the fibre goes</td><td>Above the wafer, anywhere on the die</td><td>At the chip edge, after dicing and facet preparation</td></tr>
+        <tr><td>Wafer-level test</td><td>Yes, before dicing</td><td>No</td></tr>
+        <tr><td>Bandwidth and polarisation</td><td>Narrow, polarisation-dependent (a diffraction condition)</td><td>Broad, can be low in polarisation dependence</td></tr>
+        <tr><td>Best reported (examples)</td><td>&minus;0.58 dB, 71 nm 3-dB bandwidth, with an apodised grating and a bonded aluminium mirror (Ding et al., <a href="https://doi.org/10.1364/OL.39.005348">Opt. Lett. 39, 5348, 2014</a>)</td><td>About 0.36 dB (TM) and 0.66 dB (TE) per connection, a silicon taper below 15 nm wide inside a polymer guide (Pu et al., <a href="https://doi.org/10.1016/j.optcom.2010.05.034">Opt. Commun. 283, 3678, 2010</a>)</td></tr>
+    </table>
+    </div>
+    <ul>
+        <li>The trade, in Marchetti et al.'s review: edge couplers give higher efficiency and broader bandwidth but need more complex assembly; grating couplers suit volume manufacture and wafer-scale testing (<a href="https://doi.org/10.1364/PRJ.7.000201">Photonics Research 7, 201, 2019</a>). The records above are research results; production couplers are typically worse, and packaging tolerances add loss (<a href="https://brendanjameslynskey.github.io/OptSiP_03_Lasers_and_Energy_per_Bit/#slide-06">deck 03</a>).</li>
+        <li>The <strong>inverse taper</strong> works by narrowing the silicon until the mode no longer fits and spreads into a larger cladding guide; Almeida, Panepucci and Lipson's 40 &micro;m nanotaper improved coupling by an order of magnitude (<a href="https://doi.org/10.1364/OL.28.001302">Opt. Lett. 28, 1302, 2003</a>).</li>
+    </ul>
+</section>
+
+<section class="slide" id="slide-07">
+    <div class="slide-number">07</div>
+    <h2>Splitters and Directional Couplers</h2>
+    <div class="canvas-wrap">
+        <svg viewBox="0 0 760 190" width="760" height="190" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Three splitters: a Y-branch, a 1 by 2 multimode interference coupler, and a directional coupler with two waveguides running close together for a length L">
+            <style>
+                .w  { stroke: #97cdc6; stroke-width: 6; fill: none; stroke-linecap: round; }
+                .mm { fill: rgba(151,205,198,0.35); stroke: #97cdc6; }
+                .t  { fill: #efe8dc; font-family: 'Geist Mono', monospace; font-size: 11px; }
+                .d  { fill: #a2978b; font-family: 'Geist Mono', monospace; font-size: 10px; }
+                .m  { fill: #aabd59; font-family: 'Geist Mono', monospace; font-size: 11px; }
+            </style>
+            <path class="w" d="M20 90 L90 90 C130 90 140 60 200 55"/><path class="w" d="M90 90 C130 90 140 120 200 125"/>
+            <text x="40" y="160" class="t">Y-branch</text><text x="40" y="175" class="d">adiabatic, broadband</text>
+            <path class="w" d="M260 90 L300 90"/><rect x="300" y="65" width="110" height="50" class="mm"/><path class="w" d="M410 77 L450 77"/><path class="w" d="M410 103 L450 103"/>
+            <text x="300" y="160" class="t">MMI 1&times;2</text><text x="300" y="175" class="d">self-imaging in a wide section</text>
+            <path class="w" d="M500 50 C540 50 550 80 590 80 L660 80 C700 80 710 50 740 50"/>
+            <path class="w" d="M500 130 C540 130 550 100 590 100 L660 100 C700 100 710 130 740 130"/>
+            <line x1="590" y1="66" x2="660" y2="66" stroke="#aabd59"/><text x="618" y="61" class="m">L</text>
+            <text x="560" y="160" class="t">directional coupler</text><text x="560" y="175" class="d">a narrow gap: evanescent coupling</text>
+        </svg>
+    </div>
+    <ul>
+        <li><strong>Directional coupler.</strong> Two parallel guides exchange power through their evanescent fields. With coupling coefficient &kappa; and length L, the cross-port fraction is sin<sup>2</sup>(&kappa;L): full transfer at &kappa;L = &pi;/2, a 50:50 split at &pi;/4. Because &kappa; depends on the gap, width and wavelength, the split ratio drifts with fabrication and across a band.</li>
+        <li><strong>Multimode interference (MMI) coupler.</strong> A wide section supports several modes whose interference re-images the input as one or more copies at set lengths (self-imaging). MMIs are more tolerant of width errors and wavelength than directional couplers, at the cost of footprint and some excess loss.</li>
+        <li><strong>Y-branch.</strong> A slow, symmetric split; broadband and nominally 50:50.</li>
+        <li>All three are passive, lossless in principle, and reciprocal: a 50:50 combiner fed in phase delivers all the light to one output, but fed with uncorrelated inputs it loses half. That is why an interferometer, not a combiner, is the building block of the next three slides.</li>
+    </ul>
+</section>
+
+<section class="slide" id="slide-08">
+    <div class="slide-number">08</div>
+    <h2>The Mach&ndash;Zehnder Interferometer as a Filter</h2>
+    <div class="canvas-wrap">
+        <svg viewBox="0 0 760 170" width="760" height="170" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="An asymmetric Mach-Zehnder interferometer: a splitter, two arms of different length, and a combiner; output transmission oscillates with wavelength">
+            <style>
+                .w  { stroke: #97cdc6; stroke-width: 5; fill: none; stroke-linecap: round; }
+                .t  { fill: #efe8dc; font-family: 'Geist Mono', monospace; font-size: 11px; }
+                .d  { fill: #a2978b; font-family: 'Geist Mono', monospace; font-size: 10px; }
+                .cv { stroke: #aabd59; stroke-width: 2; fill: none; }
+            </style>
+            <path class="w" d="M20 80 L70 80 C100 80 100 40 130 40 L330 40 C360 40 360 80 390 80 L420 80"/>
+            <path class="w" d="M70 80 C100 80 100 120 130 120 L170 120 C190 120 190 150 230 150 L250 150 C290 150 290 120 300 120 L330 120 C360 120 360 80 390 80"/>
+            <text x="190" y="32" class="t">arm 1</text><text x="200" y="140" class="d">arm 2: longer by &Delta;L</text>
+            <path class="cv" d="M470 130 C485 130 490 40 505 40 C520 40 525 130 540 130 C555 130 560 40 575 40 C590 40 595 130 610 130 C625 130 630 40 645 40 C660 40 665 130 680 130 C695 130 700 40 715 40"/>
+            <line x1="505" y1="22" x2="575" y2="22" stroke="#e3b174"/><text x="512" y="16" class="d">FSR = &lambda;&sup2;/(n<tspan baseline-shift="sub" font-size="8">g</tspan>&Delta;L)</text>
+            <text x="470" y="155" class="d">transmission against wavelength</text>
+        </svg>
+    </div>
+    <ul>
+        <li><strong>The transfer function.</strong> Light split into two arms and recombined interferes: with a phase difference &Delta;&phi;, the bar port carries cos<sup>2</sup>(&Delta;&phi;/2) of the power. A length difference &Delta;L gives &Delta;&phi; = 2&pi;n<sub>eff</sub>&Delta;L/&lambda;, which varies with wavelength, so the output is a raised cosine in wavelength.</li>
+        <li><strong>Free spectral range</strong> FSR = &lambda;<sup>2</sup>/(n<sub>g</sub>&Delta;L): the group index, because n<sub>eff</sub> itself changes with &lambda;. A cascade of such stages (a lattice filter) flattens the passband and sharpens the edges; it is one of the WDM multiplexers of <a href="#slide-12">slide 12</a>.</li>
+        <li><strong>The same structure, balanced and with a phase shifter in one arm</strong>, is a switch or a modulator: heat one arm to swap the outputs, or drive a carrier-depletion phase shifter at tens of GHz (<a href="https://brendanjameslynskey.github.io/OptSiP_02_Modulators_and_Detectors/#slide-04">deck 02</a>).</li>
+        <li><strong>Meshes of MZIs</strong> implement any N&times;N unitary, the discrete Fourier transform included: Reck et al.'s triangular arrangement (<a href="https://doi.org/10.1103/PhysRevLett.73.58">PRL 73, 58, 1994</a>) and Clements et al.'s rectangular one, with half the optical depth (<a href="https://doi.org/10.1364/OPTICA.3.001460">Optica 3, 1460, 2016</a>). The Fourier Optics for Inference series uses them as an on-chip alternative to a lens (<a href="https://brendanjameslynskey.github.io/FOptInf_01_Fourier_Optics_for_Engineers/#slide-08">FOptInf 01, integrated-photonic alternatives</a>).</li>
+    </ul>
+</section>
+
+<section class="slide" id="slide-09">
+    <div class="slide-number">09</div>
+    <h2>Ring Resonators: FSR, Q and Finesse</h2>
+    <div class="canvas-wrap">
+        <svg viewBox="0 0 760 200" width="760" height="200" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Left: an all-pass ring beside a bus waveguide, and an add-drop ring between two bus waveguides. Right: the through-port spectrum with periodic notches separated by the free spectral range">
+            <style>
+                .w  { stroke: #97cdc6; stroke-width: 5; fill: none; }
+                .t  { fill: #efe8dc; font-family: 'Geist Mono', monospace; font-size: 11px; }
+                .d  { fill: #a2978b; font-family: 'Geist Mono', monospace; font-size: 10px; }
+                .cv { stroke: #aabd59; stroke-width: 2; fill: none; }
+                .dr { stroke: #de805a; stroke-width: 2; fill: none; stroke-dasharray: 5 3; }
+            </style>
+            <line x1="20" y1="150" x2="170" y2="150" class="w"/><circle cx="95" cy="105" r="38" class="w"/>
+            <text x="40" y="180" class="t">all-pass</text>
+            <line x1="200" y1="160" x2="350" y2="160" class="w"/><circle cx="275" cy="105" r="38" class="w"/><line x1="200" y1="50" x2="350" y2="50" class="w"/>
+            <text x="215" y="190" class="t">add-drop</text><text x="320" y="42" class="d">drop</text>
+            <path class="cv" d="M400 40 L440 40 C452 40 455 140 460 140 C465 140 468 40 480 40 L560 40 C572 40 575 140 580 140 C585 140 588 40 600 40 L680 40 C692 40 695 140 700 140 C705 140 708 40 720 40 L740 40"/>
+            <path class="dr" d="M400 150 L445 150 C455 150 455 60 460 60 C465 60 465 150 475 150 L565 150 C575 150 575 60 580 60 C585 60 585 150 595 150 L685 150 C695 150 695 60 700 60 C705 60 705 150 715 150 L740 150"/>
+            <line x1="460" y1="170" x2="580" y2="170" stroke="#e3b174"/><text x="490" y="186" class="d">FSR = &lambda;&sup2;/(n<tspan baseline-shift="sub" font-size="8">g</tspan>L)</text>
+            <text x="610" y="30" class="d">through</text><text x="610" y="168" class="d">drop</text>
+        </svg>
+    </div>
+    <ul>
+        <li><strong>Resonance:</strong> when the round trip L = 2&pi;R holds a whole number of wavelengths, n<sub>eff</sub>L = m&lambda;, light builds up in the ring. An all-pass ring removes those wavelengths from the bus (a notch); an add-drop ring routes them to a second bus (a band-pass filter).</li>
+        <li><strong>Free spectral range</strong> FSR = &lambda;<sup>2</sup>/(n<sub>g</sub>L). With n<sub>g</sub> &asymp; 4.0, a 10 &micro;m-radius ring at 1550 nm has an FSR of about 9.5 nm (computed on <a href="#slide-04">slide 04</a>). Small rings have wide FSRs, which is what lets one ring per WDM channel share a bus.</li>
+        <li><strong>Q factor</strong> = &lambda;/&Delta;&lambda;<sub>FWHM</sub>, set by round-trip loss and by how strongly the ring couples to the bus; <strong>finesse</strong> = FSR/&Delta;&lambda;<sub>FWHM</sub> counts how many resolvable channels fit in one FSR. A loaded Q of 10,000 at 1550 nm is a 0.155 nm linewidth.</li>
+        <li><strong>Critical coupling</strong> (coupling equal to round-trip loss) gives a deep notch: the basis of ring modulators (<a href="https://brendanjameslynskey.github.io/OptSiP_02_Modulators_and_Detectors/#slide-06">deck 02</a>). The standard treatment, with all the transfer functions, is Bogaerts et al., &ldquo;Silicon microring resonators&rdquo; (<a href="https://doi.org/10.1002/lpor.201100017">Laser Photonics Rev. 6, 47, 2012</a>).</li>
+    </ul>
+</section>
+
+<section class="slide" id="slide-10">
+    <div class="slide-number">10</div>
+    <h2>Temperature and Fabrication Sensitivity</h2>
+    <p>A filter's resonance moves by d&lambda; = (&lambda;/n<sub>g</sub>)&middot;dn<sub>eff</sub> whenever anything changes n<sub>eff</sub>. In silicon, two things change it a lot.</p>
+    <div class="diagram-grid cols-2">
+        <div class="diagram-panel accent-border">
+            <h4>Temperature</h4>
+            <ul>
+                <li>Silicon's thermo-optic coefficient is 1.8&times;10<sup>&minus;4</sup> K<sup>&minus;1</sup> at 300 K (Komma et al., <a href="https://doi.org/10.1063/1.4738989">APL 101, 041905, 2012</a>).</li>
+                <li>The solver on <a href="#slide-04">slide 04</a> turns that into about 72 pm/K for a 500 &times; 220 nm strip at 1550 nm. A ring with a 0.155 nm linewidth (Q of 10,000) is pushed off its own resonance by about 2 K.</li>
+                <li>Hence heaters and control loops on every ring (<a href="https://brendanjameslynskey.github.io/OptSiP_02_Modulators_and_Detectors/#slide-08">deck 02</a>) and their power in the link budget (<a href="https://brendanjameslynskey.github.io/OptSiP_03_Lasers_and_Energy_per_Bit/#slide-11">deck 03</a>).</li>
+            </ul>
+        </div>
+        <div class="diagram-panel accent-border">
+            <h4>Fabrication</h4>
+            <ul>
+                <li>The same solver gives about 0.5 nm of resonance shift per nanometre of width and about 1.3 nm per nanometre of silicon thickness, for 500 &times; 220 nm at 1550 nm. Narrower guides are more sensitive to width.</li>
+                <li>Thickness varies across a wafer as well as width; Lu et al. extracted both from 2,074 racetrack resonators on one 200 mm wafer to predict circuit yield (<a href="https://doi.org/10.1364/OE.25.009712">Opt. Express 25, 9712, 2017</a>).</li>
+                <li>A few nanometres of variation therefore move a resonance by more than a WDM channel spacing at 100 GHz (0.8 nm at 1550 nm): rings are tuned after fabrication, not trusted to land.</li>
+            </ul>
+        </div>
+    </div>
+    <p style="font-size:0.85rem;">The sensitivities in this slide are computed by the semi-vectorial solver and are approximate; a fully vectorial solver or measurement on a given process is the authority. Wider waveguides are less width-sensitive, which is one reason rings are often drawn wider than the single-mode width.</p>
+</section>
+
+<section class="slide" id="slide-11">
+    <div class="slide-number">11</div>
+    <h2>WDM Grids: CWDM, LAN-WDM and DWDM</h2>
+    <p>Wavelength-division multiplexing (WDM) carries several channels on one fibre, each on its own wavelength. Standards fix the grid so that transmitters and receivers from different vendors agree.</p>
+    <div class="canvas-wrap">
+        <svg viewBox="0 0 760 170" width="760" height="170" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Wavelength axis from 1260 to 1340 nanometres showing CWDM4 channels at 1271, 1291, 1311 and 1331 nanometres, and LAN-WDM channels between 1295 and 1310 nanometres">
+            <style>
+                .ax { stroke: #a2978b; stroke-width: 1; }
+                .c  { stroke: #aabd59; stroke-width: 3; }
+                .l  { stroke: #de805a; stroke-width: 3; }
+                .t  { fill: #efe8dc; font-family: 'Geist Mono', monospace; font-size: 11px; }
+                .d  { fill: #a2978b; font-family: 'Geist Mono', monospace; font-size: 10px; }
+            </style>
+            <line x1="40" y1="130" x2="720" y2="130" class="ax"/>
+            <text x="30" y="150" class="d">1260</text><text x="200" y="150" class="d">1280</text><text x="370" y="150" class="d">1300</text><text x="540" y="150" class="d">1320</text><text x="690" y="150" class="d">1340 nm</text>
+            <line x1="133.5" y1="130" x2="133.5" y2="40" class="c"/><line x1="303.5" y1="130" x2="303.5" y2="40" class="c"/><line x1="473.5" y1="130" x2="473.5" y2="40" class="c"/><line x1="643.5" y1="130" x2="643.5" y2="40" class="c"/>
+            <text x="110" y="32" class="t">1271</text><text x="280" y="32" class="t">1291</text><text x="450" y="32" class="t">1311</text><text x="620" y="32" class="t">1331</text>
+            <line x1="341.3" y1="130" x2="341.3" y2="80" class="l"/><line x1="379.4" y1="130" x2="379.4" y2="80" class="l"/><line x1="417.9" y1="130" x2="417.9" y2="80" class="l"/><line x1="456.7" y1="130" x2="456.7" y2="80" class="l"/>
+            <text x="330" y="72" class="d">LAN-WDM</text>
+            <text x="40" y="166" class="d">green: CWDM4 (20 nm spacing)   orange: 100GBASE-LR4 LAN-WDM (800 GHz spacing)</text>
+        </svg>
+    </div>
+    <div class="table-wrap">
+    <table>
+        <tr><th>Grid</th><th>Spacing</th><th>Where it is defined</th><th>Used by (examples)</th></tr>
+        <tr><td>CWDM</td><td>20 nm; 18 wavelengths, 1271&ndash;1611 nm</td><td>ITU-T <a href="https://www.itu.int/rec/T-REC-G.694.2-200312-I">G.694.2</a></td><td>CWDM4 MSA: 4 &times; 25G, 1271/1291/1311/1331 nm, up to 2 km on duplex single-mode fibre (<a href="https://cwdm4-msa.org/">cwdm4-msa.org</a>)</td></tr>
+        <tr><td>LAN-WDM</td><td>800 GHz (about 4.5 nm at 1300 nm)</td><td>IEEE 802.3 (<a href="https://www.ieee802.org/3/ba/">802.3ba</a>)</td><td>100GBASE-LR4: 1295.56, 1300.05, 1304.58 and 1309.14 nm, 10 km</td></tr>
+        <tr><td>DWDM</td><td>Anchored at 193.1 THz; 12.5, 25, 50 or 100 GHz fixed spacing, or a flexible grid</td><td>ITU-T <a href="https://www.itu.int/rec/T-REC-G.694.1">G.694.1</a></td><td>Long-haul and metro; dense optical I/O proposals</td></tr>
+    </table>
+    </div>
+    <ul>
+        <li><strong>Coarse grids</strong> let uncooled lasers drift without leaving their channel and need only simple filters; <strong>dense grids</strong> need temperature-controlled lasers and sharper filters, but fit many more channels in the band where fibre and amplifiers work best.</li>
+        <li>Data-centre optics around 1310 nm uses coarse grids or none: 400GBASE-DR4 (<a href="https://www.ieee802.org/3/bs/">802.3bs</a>) puts one PAM4 wavelength on each of four parallel fibres for 500 m, while 400GBASE-FR8 and LR8 put eight wavelengths on one duplex fibre for 2 and 10 km. The data-centre series takes this up.</li>
+    </ul>
+</section>
+
+<section class="slide" id="slide-12">
+    <div class="slide-number">12</div>
+    <h2>Multiplexers: AWGs, Echelles, Rings and Lattices</h2>
+    <div class="canvas-wrap">
+        <svg viewBox="0 0 760 200" width="760" height="200" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="An arrayed waveguide grating: input waveguide, a first free-propagation slab, an array of waveguides with linearly increasing length, a second slab, and output waveguides, one per wavelength">
+            <style>
+                .w  { stroke: #97cdc6; stroke-width: 3; fill: none; }
+                .sl { fill: rgba(151,205,198,0.25); stroke: #97cdc6; }
+                .t  { fill: #efe8dc; font-family: 'Geist Mono', monospace; font-size: 11px; }
+                .d  { fill: #a2978b; font-family: 'Geist Mono', monospace; font-size: 10px; }
+            </style>
+            <path class="w" d="M20 150 L120 150"/>
+            <path class="sl" d="M120 120 L190 100 L190 200 L120 180 Z"/>
+            <path class="w" d="M190 110 C260 110 270 30 380 30 C490 30 500 110 570 110"/>
+            <path class="w" d="M190 130 C260 130 270 55 380 55 C490 55 500 130 570 130"/>
+            <path class="w" d="M190 150 C260 150 270 80 380 80 C490 80 500 150 570 150"/>
+            <path class="w" d="M190 170 C260 170 270 105 380 105 C490 105 500 170 570 170"/>
+            <path class="w" d="M190 190 C260 190 270 130 380 130 C490 130 500 190 570 190"/>
+            <path class="sl" d="M570 100 L640 120 L640 180 L570 200 Z"/>
+            <path class="w" d="M640 130 L740 120"/><path class="w" d="M640 145 L740 145"/><path class="w" d="M640 160 L740 170"/>
+            <text x="20" y="140" class="d">&lambda;1&hellip;&lambda;N in</text>
+            <text x="100" y="196" class="d">slab</text><text x="590" y="196" class="d">slab</text>
+            <text x="310" y="190" class="t">arms: length steps <text x="300" y="158" class="t">arms: length steps &Delta;L</text>Delta;L</text>
+            <text x="660" y="110" class="d">&lambda;1</text><text x="660" y="190" class="d">&lambda;N</text>
+        </svg>
+    </div>
+    <div class="table-wrap">
+    <table>
+        <tr><th>Device</th><th>How it separates wavelengths</th><th>Strengths</th><th>Weaknesses</th></tr>
+        <tr><td>Arrayed waveguide grating (AWG)</td><td>Arms with stepped lengths tilt the phase front by wavelength; the output slab focuses each wavelength to its own port</td><td>Many channels in one device; dense spacing</td><td>Phase errors in the arms raise crosstalk; large</td></tr>
+        <tr><td>Echelle (planar concave) grating</td><td>A reflective grating etched at the edge of a slab</td><td>Compact for coarse spacing</td><td>Facet quality and etch depth set loss</td></tr>
+        <tr><td>Cascaded MZI lattice</td><td>Raised-cosine stages (<a href="#slide-08">slide 08</a>) in a binary tree</td><td>Flat passbands, simple</td><td>One stage per doubling; each needs phase trimming</td></tr>
+        <tr><td>Ring filters on a bus</td><td>One add-drop ring per channel (<a href="#slide-09">slide 09</a>)</td><td>Tiny; each channel tuned on its own</td><td>Every ring needs a heater and a control loop</td></tr>
+    </table>
+    </div>
+    <ul>
+        <li>Pathak et al. compared AWGs and echelle gratings on SOI and found AWGs better for dense channel spacing and echelles for coarse (<a href="https://doi.org/10.1109/JPHOT.2014.2361658">IEEE Photonics J. 6, 4900109, 2014</a>).</li>
+        <li><strong>An AWG is integrated Fourier optics.</strong> Each slab is a free-propagation region that acts as a lens: the input slab spreads the field over the arms and the output slab Fourier-transforms the arms' phase-tilted field into a position. That is the on-chip analogue of the lens of <a href="https://brendanjameslynskey.github.io/FOptInf_01_Fourier_Optics_for_Engineers/#slide-02">FOptInf 01, the lens as a Fourier transformer</a>.</li>
+    </ul>
+</section>
+
+<section class="slide" id="slide-13">
+    <div class="slide-number">13</div>
+    <h2>What to Take Away</h2>
+    <ul>
+        <li><strong>The 220 nm SOI platform trades sensitivity for density.</strong> An index contrast of about 2 gives sub-micron guides and micrometre bends, and makes every resonance move with nanometres of width and degrees of temperature.</li>
+        <li><strong>Use the group index</strong> for every FSR and delay: about 4.0 against an n<sub>eff</sub> of about 2.5 for a 500 &times; 220 nm strip (the interactive, <a href="#slide-04">slide 04</a>).</li>
+        <li><strong>Fibre coupling is a design problem of its own:</strong> about 20 dB butt-coupled, under 1 dB with the best research grating or edge couplers.</li>
+        <li><strong>Interferometers and rings are the filters</strong>; their FSR, Q and finesse set how many WDM channels fit, and their sensitivity sets how much tuning power they cost.</li>
+        <li><strong>WDM grids are standardised:</strong> CWDM (20 nm) and LAN-WDM for short reaches near 1310 nm, DWDM anchored at 193.1 THz for dense systems.</li>
+        <li><strong>Next:</strong> <a href="https://brendanjameslynskey.github.io/OptSiP_02_Modulators_and_Detectors/">deck 02</a> puts data on the light and takes it off again: modulators and photodiodes.</li>
+    </ul>
+</section>
+
+<!-- ════════════════════════════════════ Footer ════════════════════════════════════ -->
+<footer class="footer">
+    <p>Part of the <a href="https://github.com/BrendanJamesLynskey/Optical_Hub_Silicon_Photonics">Silicon Photonics Fundamentals series</a> &middot; <a href="https://brendanjameslynskey.github.io/Optical_Hub_Silicon_Photonics/#glossary">glossary: every concept and where it is explained</a> &middot; numbers: cited on each slide or computed live in the interactive</p>
+    <p style="margin-top: 0.5rem; font-size: 0.8rem;"><a href="https://brendanjameslynskey.github.io/OptSiP_02_Modulators_and_Detectors/">02 Modulators and Detectors &rarr;</a></p>
+    <p style="margin-top: 0.5rem; font-size: 0.8rem;">Sister series: <a href="https://github.com/BrendanJamesLynskey/Optical_Hub_Data_Centres">Optical Technology for Data Centres</a> (planned) &middot; <a href="https://github.com/BrendanJamesLynskey/Optical_Hub_AI_Processing">Optical Technology for AI Processing</a> (planned) &middot; <a href="https://brendanjameslynskey.github.io/LLM_Hub_Fourier_Optics_Inference/">Fourier Optics for Inference</a> &middot; <a href="https://brendanjameslynskey.github.io/LLM_Hub_Fourier_Optics_Training/">Fourier Optics for Training</a> &middot; <a href="https://brendanjameslynskey.github.io/LLM_Hub_Compute_in_Transit/">Compute in Transit</a></p>
+</footer>
+
+<script>
+    // Smooth scroll for TOC links
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+        anchor.addEventListener('click', function (e) {
+            e.preventDefault();
+            const target = document.querySelector(this.getAttribute('href'));
+            if (target) target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        });
+    });
+
+    // Subtle fade-in on scroll
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                entry.target.style.opacity = '1';
+                entry.target.style.transform = 'translateY(0)';
+            }
+        });
+    }, { threshold: 0.1 });
+    document.querySelectorAll('.slide').forEach(slide => {
+        slide.style.opacity = '0';
+        slide.style.transform = 'translateY(30px)';
+        slide.style.transition = 'opacity 0.6s ease, transform 0.6s ease';
+        observer.observe(slide);
+    });
+</script>
+
+</body>
+</html>
